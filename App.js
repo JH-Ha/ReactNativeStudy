@@ -15,6 +15,7 @@ import {
   Text,
   StatusBar,
   Button,
+  Alert,
 } from 'react-native';
 
 import {
@@ -32,10 +33,29 @@ class App extends Component {
     this.state = {
       clicked: false,
       btnHighlight: [false, false, false],
+      highlightOrder :[],
+      intervalArr :[],
+      curOrder : 0,
+      randomArr :[],
     }
-    let arr = [];
+    this.clearInterval = this.clearInterval.bind(this);
+    this.startGame = this.startGame.bind(this);
+
+  }
+
+  componentDidMount(){
+    
+  }
+  clearInterval(){
+    let lastOne = setTimeout(()=>{},1);
+    for(let i = 0; i < this.state.intervalArr.length; i ++){
+      clearInterval(this.state.intervalArr[i]);
+    }
+  }
+  startGame(){
+    let randomArr = [];
     for (let i = 0; i < 3; i++) {
-      arr.push({
+      randomArr.push({
         'random': Math.random(),
         'idx': i
       });
@@ -48,24 +68,19 @@ class App extends Component {
       }
       return 0;
     }
-    arr.sort(compare);
-    console.log(arr);
+    randomArr.sort(compare);
+    console.log(randomArr);
 
-    
-
-
-  }
-
-  componentDidMount(){
     let highlightIdx = 0;
     
-    setInterval(() => {
+    let intervalId = setInterval(() => {
+      let arr = [];
       if (highlightIdx >= 3) {
         highlightIdx -= 3;
       }
-      let arr = [];
       for(let i = 0; i < 3; i ++){
-        if(i == highlightIdx){
+        if(i == randomArr[highlightIdx].idx){
+          console.log(true);
           arr.push(true);
         }else{
           arr.push(false);
@@ -73,20 +88,54 @@ class App extends Component {
       }
       highlightIdx ++;
       //false 로 초기화
+      let intervalArr = this.state.intervalArr;
+      intervalArr.push(intervalId);
       this.setState({
         btnHighlight:arr,
-      })
+        intervalArr : intervalArr,
+        randomArr : randomArr,
+      });
+      
     }, 500);
+    setTimeout(()=>{
+      clearInterval(intervalId);
+
+      //false로 초기화
+      let arr = [];
+      for(let i = 0; i < 3; i ++){
+        arr.push(false);
+      }
+      this.setState({
+        btnHighlight: arr,
+        curOrder : 0,
+      });
+    },500 * (3 + 1));
+  }
+  clickBtn= (idx)=>{
+    console.log(idx);
+    if(idx == this.state.randomArr[this.state.curOrder].idx){
+      this.setState({
+        curOrder : this.state.curOrder + 1,
+      });
+      if(this.state.curOrder + 1 >= 3){
+        Alert.alert("성공!");
+      }
+    }else{
+      Alert.alert("틀렸습니다.");
+    }
   }
 
   render() {
     let arr = [1, 2, 3];
     return (
       <>
+      <Button title="start" onPress={this.startGame}></Button>
+      <Button title="clearInterval" onPress={this.clearInterval}></Button>
         <View>
           {arr.map((i, j) => {
             return (<Button title={i.toString()}
-              color={this.state.btnHighlight[j] ? "#123456" : "#234567"}></Button>);
+              color={this.state.btnHighlight[j] ? "#123456" : "#234567"}
+              onPress={()=>{this.clickBtn(j)}}></Button>);
           })}
         </View>
         {/* <StatusBar barStyle="dark-content" />
