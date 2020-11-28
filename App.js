@@ -26,35 +26,38 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+import Tile from './Components/Tile';
+
 class App extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
       clicked: false,
-      btnHighlight: [false, false, false],
-      highlightOrder :[],
-      intervalArr :[],
-      curOrder : 0,
-      randomArr :[],
+      btnHighlight: [],
+      intervalArr: [],
+      curOrder: 0,
+      randomArr: [],
+      tileLength: 3 * 3,
+      tileType: 3,
+      success: [],
     }
     this.clearInterval = this.clearInterval.bind(this);
     this.startGame = this.startGame.bind(this);
 
   }
 
-  componentDidMount(){
-    
+  componentDidMount() {
+
   }
-  clearInterval(){
-    let lastOne = setTimeout(()=>{},1);
-    for(let i = 0; i < this.state.intervalArr.length; i ++){
+  clearInterval() {
+    for (let i = 0; i < this.state.intervalArr.length; i++) {
       clearInterval(this.state.intervalArr[i]);
     }
   }
-  startGame(){
+  startGame() {
     let randomArr = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < this.state.tileLength; i++) {
       randomArr.push({
         'random': Math.random(),
         'idx': i
@@ -72,119 +75,102 @@ class App extends Component {
     console.log(randomArr);
 
     let highlightIdx = 0;
-    
+    let highlightArr = [];
+    let success = [];
+    //초기화
+    for (let i = 0; i < this.state.tileLength; i++) {
+      highlightArr.push(false);
+      success.push(false);
+    }
+    this.setState({
+      btnHighlight: highlightArr,
+      success: success,
+    })
+
     let intervalId = setInterval(() => {
       let arr = [];
-      if (highlightIdx >= 3) {
-        highlightIdx -= 3;
+      let success = [];
+      if (highlightIdx >= this.state.tileLength) {
+        //false로 초기화
+        for (let i = 0; i < this.state.tileLength; i++) {
+          arr.push(false);
+          success.push(false);
+        }
+        this.setState({
+          btnHighlight: arr,
+          curOrder: 0,
+          success: success,
+        });
+        clearInterval(intervalId);
+        return;
       }
-      for(let i = 0; i < 3; i ++){
-        if(i == randomArr[highlightIdx].idx){
+      for (let i = 0; i < this.state.tileLength; i++) {
+        if (i == randomArr[highlightIdx].idx) {
           console.log(true);
           arr.push(true);
-        }else{
+        } else {
           arr.push(false);
         }
       }
-      highlightIdx ++;
+      highlightIdx++;
       //false 로 초기화
       let intervalArr = this.state.intervalArr;
       intervalArr.push(intervalId);
       this.setState({
-        btnHighlight:arr,
-        intervalArr : intervalArr,
-        randomArr : randomArr,
-      });
-      
-    }, 500);
-    setTimeout(()=>{
-      clearInterval(intervalId);
-
-      //false로 초기화
-      let arr = [];
-      for(let i = 0; i < 3; i ++){
-        arr.push(false);
-      }
-      this.setState({
         btnHighlight: arr,
-        curOrder : 0,
+        intervalArr: intervalArr,
+        randomArr: randomArr,
       });
-    },500 * (3 + 1));
+
+    }, 400);
   }
-  clickBtn= (idx)=>{
+  clickBtn = (idx) => {
     console.log(idx);
-    if(idx == this.state.randomArr[this.state.curOrder].idx){
+    if (idx == this.state.randomArr[this.state.curOrder].idx) {
+      let success = this.state.success;
+      success[idx] = true;
       this.setState({
-        curOrder : this.state.curOrder + 1,
+        curOrder: this.state.curOrder + 1,
+        success: success,
       });
-      if(this.state.curOrder + 1 >= 3){
+
+      if (this.state.curOrder + 1 >= this.state.tileLength) {
         Alert.alert("성공!");
       }
-    }else{
-      Alert.alert("틀렸습니다.");
+      console.log("return true");
+      return true;
     }
+    console.log("return false");
+    return false;
   }
 
   render() {
-    let arr = [1, 2, 3];
+    console.log(this.state.btnHighlight);
     return (
       <>
-      <Button title="start" onPress={this.startGame}></Button>
-      <Button title="clearInterval" onPress={this.clearInterval}></Button>
-        <View>
-          {arr.map((i, j) => {
-            return (<Button title={i.toString()}
-              color={this.state.btnHighlight[j] ? "#123456" : "#234567"}
-              onPress={()=>{this.clickBtn(j)}}></Button>);
+        <Button title="start" onPress={this.startGame}></Button>
+        <Button title="clearInterval" onPress={this.clearInterval}></Button>
+        <View style={styles.tileContainer}>
+          {this.state.btnHighlight.map((i, j) => {
+            return (<Tile context={j + 1} isHighlight={this.state.btnHighlight[j]}
+              isSuccess={this.state.success[j]}
+              type='3' onPress={() => { return this.clickBtn(j) }}
+            ></Tile>);
           })}
         </View>
-        {/* <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView> */}
       </>
     );
   }
 };
 
 const styles = StyleSheet.create({
+  tileContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    flexWrap: "wrap",
+    aspectRatio: 1,
+  },
   btnHighlight: {
     flex: 1,
     backgroundColor: Colors.black,
