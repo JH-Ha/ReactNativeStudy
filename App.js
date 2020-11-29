@@ -41,20 +41,27 @@ class App extends Component {
       tileLength: 3 * 3,
       tileType: 3,
       success: [],
+      timer: 0.0,
+      recordId: 0
     }
-    this.clearInterval = this.clearInterval.bind(this);
     this.startGame = this.startGame.bind(this);
 
   }
 
   componentDidMount() {
+    let btnHighlight = [];
+    for (let i = 0; i < this.state.tileLength; i++) {
+      btnHighlight.push(false);
+    }
+    this.setState({
+      btnHighlight: btnHighlight,
+    });
+  }
+
+  startRecord = () => {
 
   }
-  clearInterval() {
-    for (let i = 0; i < this.state.intervalArr.length; i++) {
-      clearInterval(this.state.intervalArr[i]);
-    }
-  }
+
   startGame() {
     let randomArr = [];
     for (let i = 0; i < this.state.tileLength; i++) {
@@ -148,8 +155,15 @@ class App extends Component {
     console.log(this.state.btnHighlight);
     return (
       <>
-        <Button title="start" onPress={this.startGame}></Button>
-        <Button title="clearInterval" onPress={this.clearInterval}></Button>
+        <View style={styles.row}>
+          <Text onPress={this.startGame} style={styles.startBtn}>
+            Start
+        </Text>
+          <Text style={styles.recordTimer}>
+            {this.state.timer}
+          </Text>
+        </View>
+
         <View style={styles.tileContainer}>
           {this.state.btnHighlight.map((i, j) => {
             return (<Tile context={j + 1} isHighlight={this.state.btnHighlight[j]}
@@ -164,6 +178,31 @@ class App extends Component {
 };
 
 const styles = StyleSheet.create({
+  row: {
+    display: "flex",
+    flexDirection: "row",
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  startBtn: {
+    backgroundColor: "#343a40",
+    color: "#fff",
+    padding: 10,
+    // width : 80,
+    // height : 60,
+    textAlignVertical: "center",
+    textAlign: "center",
+    borderRadius: 5,
+    fontSize: 30,
+
+
+  },
+  recordTimer: {
+    fontSize: 50,
+    marginLeft: "auto",
+    marginRight: 10,
+    // width : 100,
+  },
   tileContainer: {
     display: "flex",
     flexDirection: "row",

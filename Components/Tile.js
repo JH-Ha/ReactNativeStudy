@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         textAlignVertical: "center",
         fontSize: 50,
+        marginBottom: "3.3%",
     },
     four: {
         flexBasis: "40%",
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#3b5998",
     },
     success: {
-        backgroundColor: "#3b5998",
+        backgroundColor: "#28a745",
     },
     fail: {
         backgroundColor: "#f44336",
